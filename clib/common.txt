@@ -1,0 +1,21 @@
+#define NAME(x) x##_avx512
+#define NAME(x) x##_avx2
+#define NAME(x) x##_avx
+#define NAME(x) x##_sse4_2
+int64_t NAME(asm_sum)(int64_t *beg, int64_t len) {
+int64_t NAME(asm_max)(int64_t *beg, int64_t len) {
+int64_t NAME(asm_min)(int64_t *beg, int64_t len) {
+void NAME(asm_multi)(int64_t *a, int64_t *b, int64_t len) {
+void NAME(asm_and)(int64_t *a, int64_t *b, int64_t len) {
+void NAME(asm_and2)(int64_t *a, int64_t *b, int64_t *c, int64_t len) {
+void NAME(asm_and4)(int64_t *a, int64_t *b, int64_t *c, int64_t *d, int64_t *e, int64_t len) {
+void NAME(asm_or)(int64_t *a, int64_t *b, int64_t len) {
+void NAME(asm_or2)(int64_t *a, int64_t *b, int64_t *c, int64_t len) {
+void NAME(asm_or4)(int64_t *a, int64_t *b, int64_t *c, int64_t *d, int64_t *e, int64_t len) {
+void NAME(asm_andn)(int64_t *a, int64_t *b, int64_t len) {
+void NAME(asm_memcopy)(uint8_t *a, uint8_t *b, int64_t len) {
+void NAME(asm_memset)(uint8_t *a, uint8_t v, int64_t len) {
+uint64_t NAME(asm_bitmap_get_bit_num)(uint64_t *a, int64_t len) {
+uint64_t NAME(asm_bkdr_hash) (uint8_t *a, int64_t len, uint64_t seed) {
+uint64_t NAME(asm_multi_and_sum)(uint8_t *a, uint64_t *b, int64_t len, uint64_t seed) {
+uint64_t NAME(asm_bitmap_get_bit_list)(uint64_t *a, uint64_t *b, int64_t len) {
