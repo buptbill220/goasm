@@ -2157,48 +2157,53 @@ asm_bitmap_get_bit_list_avx2:           # @asm_bitmap_get_bit_list_avx2
 # BB#0:
 	push	rbp
 	mov	rbp, rsp
+	push	rbx
 	and	rsp, -8
-	sub	rsp, 16
-	mov	qword ptr [rsp + 8], 0
-	test	rdx, rdx
+	test	rcx, rcx
 	jle	.LBB16_1
 # BB#2:
-	lea	r8, [rdi + 8*rdx]
-	xor	r9d, r9d
+	lea	r8, [rdi + 8*rcx]
+	xor	r10d, r10d
+	movabs	r9, 285870213051353865
 	xor	eax, eax
 	.p2align	4, 0x90
 .LBB16_3:                               # =>This Loop Header: Depth=1
-                                        #     Child Loop BB16_4 Depth 2
+                                        #     Child Loop BB16_5 Depth 2
 	mov	rcx, qword ptr [rdi]
 	add	rdi, 8
-	mov	qword ptr [rsp + 8], rcx
 	test	rcx, rcx
-	je	.LBB16_5
+	je	.LBB16_6
+# BB#4:                                 #   in Loop: Header=BB16_3 Depth=1
+	popcnt	r11, rcx
+	add	rax, r11
+	inc	r11
 	.p2align	4, 0x90
-.LBB16_4:                               #   Parent Loop BB16_3 Depth=1
+.LBB16_5:                               #   Parent Loop BB16_3 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
-	#APP
-	tzcnt	rcx, qword ptr [rsp + 8]
-	#NO_APP
-	add	rcx, r9
-	mov	qword ptr [rsi], rcx
+	mov	rbx, rcx
+	neg	rbx
+	and	rbx, rcx
+	imul	rbx, r9
+	shr	rbx, 58
+	movzx	ebx, byte ptr [rdx + rbx]
+	add	rbx, r10
+	mov	qword ptr [rsi], rbx
 	add	rsi, 8
-	mov	rcx, qword ptr [rsp + 8]
-	lea	rdx, [rcx - 1]
-	and	rdx, rcx
-	mov	qword ptr [rsp + 8], rdx
-	inc	rax
-	test	rdx, rdx
-	jne	.LBB16_4
-.LBB16_5:                               #   in Loop: Header=BB16_3 Depth=1
-	add	r9, 64
+	lea	rbx, [rcx - 1]
+	and	rcx, rbx
+	dec	r11
+	cmp	r11, 1
+	jg	.LBB16_5
+.LBB16_6:                               #   in Loop: Header=BB16_3 Depth=1
+	add	r10, 64
 	cmp	rdi, r8
 	jb	.LBB16_3
-	jmp	.LBB16_6
+	jmp	.LBB16_7
 .LBB16_1:
 	xor	eax, eax
-.LBB16_6:
-	mov	rsp, rbp
+.LBB16_7:
+	lea	rsp, [rbp - 8]
+	pop	rbx
 	pop	rbp
 	ret
 .Lfunc_end16:

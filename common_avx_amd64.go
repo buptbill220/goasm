@@ -37,7 +37,7 @@ func _asm_bkdr_hash_avx(addr unsafe.Pointer,len int64, seed uint64) (ret uint64)
 //go:noescape
 func _asm_multi_and_sum_avx(addr unsafe.Pointer, addr1 unsafe.Pointer, len  int64, seed uint64) (ret uint64)
 //go:noescape
-func _asm_bitmap_get_bit_list_avx(addr unsafe.Pointer, addr1 unsafe.Pointer, len int64) (ret uint64)
+func _asm_bitmap_get_bit_list_avx(addr unsafe.Pointer, addr1 unsafe.Pointer, addr2 unsafe.Pointer, len int64) (ret uint64)
 
 func asm_sum_avx(v []int64) (int64) {
 	x := (*slice)(unsafe.Pointer(&v))
@@ -140,5 +140,5 @@ func asm_multi_and_sum_avx(v[]uint8, v1 []uint64, seed uint64) uint64 {
 func asm_bitmap_get_bit_list_avx(v, v1 []uint64) uint64 {
 	x := (*slice)(unsafe.Pointer(&v))
 	y := (*slice)(unsafe.Pointer(&v1))
-	return _asm_bitmap_get_bit_list_avx(x.addr, y.addr, x.len)
+	return _asm_bitmap_get_bit_list_avx(x.addr, y.addr, deBruijn64tabSlice.addr, x.len)
 }

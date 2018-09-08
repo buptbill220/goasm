@@ -9,6 +9,7 @@ import (
 )
 
 const vector_len = 1024
+
 var (
 	s0, s1, s2, s3, s4, s5, s6, s7 []uint64
 	tmp, tmp_1 []uint64

@@ -13,6 +13,9 @@
 #define NAME(x) x##_sse4_2
 #endif
 
+#define ALIGN(x) x __attribute__((aligned(64)))
+static const uint64_t deBruijn64 = 0x03f79d71b4ca8b09;
+
 // type int[8]__m256i
 // type int[4]__m256i
 
@@ -159,17 +162,25 @@ uint64_t NAME(asm_multi_and_sum)(uint8_t *a, uint64_t *b, int64_t len, uint64_t 
     return sum;
 }
 
-uint64_t NAME(asm_bitmap_get_bit_list)(uint64_t *a, uint64_t *b, int64_t len) {
+static const uint8_t deBruijn64tab[64] = {
+	0, 1, 56, 2, 57, 49, 28, 3, 61, 58, 42, 50, 38, 29, 17, 4,
+	62, 47, 59, 36, 45, 43, 51, 22, 53, 39, 33, 30, 24, 18, 12, 5,
+	63, 55, 48, 27, 60, 41, 37, 16, 46, 35, 44, 21, 52, 32, 23, 11,
+	54, 26, 40, 15, 34, 20, 31, 10, 25, 14, 19, 9, 13, 8, 7, 6
+};
+
+uint64_t NAME(asm_bitmap_get_bit_list)(uint64_t *a, uint64_t *b, uint8_t* deBruijn64tab, int64_t len) {
     uint64_t *end = a + len;
     uint64_t ret_len = 0;
     uint64_t tmp = 0;
     uint64_t base = 0;
-    uint64_t count = 0;
+    uint64_t pos = 0;
     while (a < end) {
         tmp = *a++;
         while(tmp) {
-            __asm__ ("TZCNT %1,%0" : "=r" (count) : "m" (tmp));
-            *b++ = count + base;
+            //__asm__ ("TZCNT %1,%0" : "=r" (pos) : "m" (tmp));
+            pos = (uint64_t)deBruijn64tab[(tmp&-tmp)*deBruijn64>>58];
+            *b++ = pos + base;
             tmp = tmp & (tmp - 1);
             ++ret_len;
         }

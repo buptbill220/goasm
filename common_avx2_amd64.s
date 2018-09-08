@@ -1987,50 +1987,54 @@ LBB15_9:
 	MOVQ AX, ret+32(FP)
 	RET
 
-TEXT ·_asm_bitmap_get_bit_list_avx2(SB), $24-32
+TEXT ·_asm_bitmap_get_bit_list_avx2(SB), $0-40
 
 	MOVQ addr+0(FP), DI
 	MOVQ addr1+8(FP), SI
-	MOVQ len+16(FP), DX
-	ADDQ $8, SP
+	MOVQ addr2+16(FP), DX
+	MOVQ len+24(FP), CX
 
-	QUAD $0x000000082444c748; BYTE $0x00 // mov    qword [rsp + 8], 0
-	WORD $0x8548; BYTE $0xd2             // test    rdx, rdx
+	WORD $0x8548; BYTE $0xc9               // test    rcx, rcx
 	JLE  LBB16_1
-	LONG $0xd7048d4c                     // lea    r8, [rdi + 8*rdx]
-	WORD $0x3145; BYTE $0xc9             // xor    r9d, r9d
-	WORD $0xc031                         // xor    eax, eax
+	LONG $0xcf048d4c                       // lea    r8, [rdi + 8*rcx]
+	WORD $0x3145; BYTE $0xd2               // xor    r10d, r10d
+	QUAD $0x9d71b4ca8b09b949; WORD $0x03f7 // mov    r9, 285870213051353865
+	WORD $0xc031                           // xor    eax, eax
 
 LBB16_3:
 	WORD $0x8b48; BYTE $0x0f     // mov    rcx, qword [rdi]
 	LONG $0x08c78348             // add    rdi, 8
-	LONG $0x244c8948; BYTE $0x08 // mov    qword [rsp + 8], rcx
 	WORD $0x8548; BYTE $0xc9     // test    rcx, rcx
-	JE   LBB16_5
-
-LBB16_4:
-	LONG $0xbc0f48f3; WORD $0x244c; BYTE $0x08 // tzcnt    rcx, qword [rsp + 8]
-	WORD $0x014c; BYTE $0xc9     // add    rcx, r9
-	WORD $0x8948; BYTE $0x0e     // mov    qword [rsi], rcx
-	LONG $0x08c68348             // add    rsi, 8
-	LONG $0x244c8b48; BYTE $0x08 // mov    rcx, qword [rsp + 8]
-	LONG $0xff518d48             // lea    rdx, [rcx - 1]
-	WORD $0x2148; BYTE $0xca     // and    rdx, rcx
-	LONG $0x24548948; BYTE $0x08 // mov    qword [rsp + 8], rdx
-	WORD $0xff48; BYTE $0xc0     // inc    rax
-	WORD $0x8548; BYTE $0xd2     // test    rdx, rdx
-	JNE  LBB16_4
+	JE   LBB16_6
+	LONG $0xb80f4cf3; BYTE $0xd9 // popcnt    r11, rcx
+	WORD $0x014c; BYTE $0xd8     // add    rax, r11
+	WORD $0xff49; BYTE $0xc3     // inc    r11
 
 LBB16_5:
-	LONG $0x40c18349         // add    r9, 64
+	WORD $0x8948; BYTE $0xcb // mov    rbx, rcx
+	WORD $0xf748; BYTE $0xdb // neg    rbx
+	WORD $0x2148; BYTE $0xcb // and    rbx, rcx
+	LONG $0xd9af0f49         // imul    rbx, r9
+	LONG $0x3aebc148         // shr    rbx, 58
+	LONG $0x1a1cb60f         // movzx    ebx, byte [rdx + rbx]
+	WORD $0x014c; BYTE $0xd3 // add    rbx, r10
+	WORD $0x8948; BYTE $0x1e // mov    qword [rsi], rbx
+	LONG $0x08c68348         // add    rsi, 8
+	LONG $0xff598d48         // lea    rbx, [rcx - 1]
+	WORD $0x2148; BYTE $0xd9 // and    rcx, rbx
+	WORD $0xff49; BYTE $0xcb // dec    r11
+	LONG $0x01fb8349         // cmp    r11, 1
+	JG   LBB16_5
+
+LBB16_6:
+	LONG $0x40c28349         // add    r10, 64
 	WORD $0x394c; BYTE $0xc7 // cmp    rdi, r8
 	JB   LBB16_3
-	JMP  LBB16_6
+	JMP  LBB16_7
 
 LBB16_1:
 	WORD $0xc031 // xor    eax, eax
 
-LBB16_6:
-	SUBQ $8, SP
-	MOVQ AX, ret+24(FP)
+LBB16_7:
+	MOVQ AX, ret+32(FP)
 	RET

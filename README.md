@@ -51,8 +51,8 @@ BenchmarkGoMemset1-4             	 1000000	      1166 ns/op
 BenchmarkAsmMemset-4             	50000000	        22.9 ns/op     
 BenchmarkGoBitmapGetBitNum-4     	 1000000	      1369 ns/op     
 BenchmarkAsmBitmapGetBitNum-4    	 5000000	       342 ns/op     
-BenchmarkGoBitmapGetBitList-4    	   30000	     57533 ns/op     
-BenchmarkAsmBitmapGetBitList-4   	   20000	     80955 ns/op     
+BenchmarkGoBitmapGetBitList-4          30000         52366 ns/op
+BenchmarkAsmBitmapGetBitList-4         30000         46385 ns/op
 BenchmarkGoBkdrHash-4            	20000000	        68.5 ns/op     
 BenchmarkAsmBkdrHash-4           	20000000	        68.5 ns/op     
 BenchmarkGoStringAdSum-4         	30000000	        62.0 ns/op     
