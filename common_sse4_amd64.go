@@ -29,6 +29,8 @@ func _asm_andn_sse4_2(addr unsafe.Pointer, addr1 unsafe.Pointer, len int64)
 //go:noescape
 func _asm_memcopy_sse4_2(addr unsafe.Pointer, addr1 unsafe.Pointer, len int64)
 //go:noescape
+func _asm_memcopy_uint64_sse4_2(addr unsafe.Pointer, addr1 unsafe.Pointer, len int64)
+//go:noescape
 func _asm_memset_sse4_2(addr unsafe.Pointer, v uint8, len int64)
 //go:noescape
 func _asm_bitmap_get_bit_num_sse4_2(addr unsafe.Pointer, len int64) (ret uint64)
@@ -114,6 +116,12 @@ func asm_memcopy_sse4_2(v []uint8, v1 []uint8) {
 	x := (*slice)(unsafe.Pointer(&v))
 	y := (*slice)(unsafe.Pointer(&v1))
 	_asm_memcopy_sse4_2(x.addr, y.addr, x.len)
+}
+
+func asm_memcopy_uint64_sse4_2(v []uint64, v1 []uint64) {
+	x := (*slice)(unsafe.Pointer(&v))
+	y := (*slice)(unsafe.Pointer(&v1))
+	_asm_memcopy_uint64_sse4_2(x.addr, y.addr, x.len)
 }
 
 func asm_memset_sse4_2(v []uint8, v1 uint8) {

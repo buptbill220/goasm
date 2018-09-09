@@ -1549,6 +1549,150 @@ LBB11_14:
 LBB11_15:
 	RET
 
+TEXT ·_asm_memcopy_uint64_sse4_2(SB), $0-24
+
+	MOVQ addr+0(FP), DI
+	MOVQ addr1+8(FP), SI
+	MOVQ len+16(FP), DX
+
+	WORD $0x8548; BYTE $0xd2               // test    rdx, rdx
+	JLE  LBB12_19
+	LONG $0xd71c8d4c                       // lea    r11, [rdi + 8*rdx]
+	LONG $0x08478d48                       // lea    rax, [rdi + 8]
+	WORD $0x3949; BYTE $0xc3               // cmp    r11, rax
+	WORD $0x8949; BYTE $0xc2               // mov    r10, rax
+	LONG $0xd3470f4d                       // cmova    r10, r11
+	WORD $0x8948; BYTE $0xf9               // mov    rcx, rdi
+	WORD $0xf748; BYTE $0xd1               // not    rcx
+	WORD $0x0149; BYTE $0xca               // add    r10, rcx
+	LONG $0x03eac149                       // shr    r10, 3
+	WORD $0xff49; BYTE $0xc2               // inc    r10
+	LONG $0x04fa8349                       // cmp    r10, 4
+	JB   LBB12_14
+	QUAD $0xfffffffffffcb949; WORD $0x3fff // mov    r9, 4611686018427387900
+	WORD $0x214d; BYTE $0xd1               // and    r9, r10
+	JE   LBB12_14
+	WORD $0x3949; BYTE $0xc3               // cmp    r11, rax
+	LONG $0xc3470f49                       // cmova    rax, r11
+	WORD $0x0148; BYTE $0xc8               // add    rax, rcx
+	LONG $0xf8e08348                       // and    rax, -8
+	LONG $0x064c8d48; BYTE $0x08           // lea    rcx, [rsi + rax + 8]
+	WORD $0x3948; BYTE $0xf9               // cmp    rcx, rdi
+	JBE  LBB12_5
+	LONG $0x07448d48; BYTE $0x08           // lea    rax, [rdi + rax + 8]
+	WORD $0x3948; BYTE $0xf0               // cmp    rax, rsi
+	JA   LBB12_14
+
+LBB12_5:
+	LONG $0xfc418d4d         // lea    r8, [r9 - 4]
+	WORD $0x8944; BYTE $0xc1 // mov    ecx, r8d
+	WORD $0xe9c1; BYTE $0x02 // shr    ecx, 2
+	WORD $0xc1ff             // inc    ecx
+	LONG $0x03e18348         // and    rcx, 3
+	JE   LBB12_6
+	WORD $0xf748; BYTE $0xd9 // neg    rcx
+	WORD $0xc031             // xor    eax, eax
+
+LBB12_8:
+	LONG $0xc604100f             // movups    xmm0, oword [rsi + 8*rax]
+	LONG $0xc64c100f; BYTE $0x10 // movups    xmm1, oword [rsi + 8*rax + 16]
+	LONG $0xc704110f             // movups    oword [rdi + 8*rax], xmm0
+	LONG $0xc74c110f; BYTE $0x10 // movups    oword [rdi + 8*rax + 16], xmm1
+	LONG $0x04c08348             // add    rax, 4
+	WORD $0xff48; BYTE $0xc1     // inc    rcx
+	JNE  LBB12_8
+	JMP  LBB12_9
+
+LBB12_6:
+	WORD $0xc031 // xor    eax, eax
+
+LBB12_9:
+	LONG $0x0cf88349             // cmp    r8, 12
+	JB   LBB12_12
+	WORD $0x894c; BYTE $0xca     // mov    rdx, r9
+	WORD $0x2948; BYTE $0xc2     // sub    rdx, rax
+	LONG $0xc64c8d48; BYTE $0x70 // lea    rcx, [rsi + 8*rax + 112]
+	LONG $0xc7448d48; BYTE $0x70 // lea    rax, [rdi + 8*rax + 112]
+
+LBB12_11:
+	LONG $0x9041100f         // movups    xmm0, oword [rcx - 112]
+	LONG $0xa049100f         // movups    xmm1, oword [rcx - 96]
+	LONG $0x9040110f         // movups    oword [rax - 112], xmm0
+	LONG $0xa048110f         // movups    oword [rax - 96], xmm1
+	LONG $0xb041100f         // movups    xmm0, oword [rcx - 80]
+	LONG $0xc049100f         // movups    xmm1, oword [rcx - 64]
+	LONG $0xb040110f         // movups    oword [rax - 80], xmm0
+	LONG $0xc048110f         // movups    oword [rax - 64], xmm1
+	LONG $0xd041100f         // movups    xmm0, oword [rcx - 48]
+	LONG $0xe049100f         // movups    xmm1, oword [rcx - 32]
+	LONG $0xd040110f         // movups    oword [rax - 48], xmm0
+	LONG $0xe048110f         // movups    oword [rax - 32], xmm1
+	LONG $0xf041100f         // movups    xmm0, oword [rcx - 16]
+	WORD $0x100f; BYTE $0x09 // movups    xmm1, oword [rcx]
+	LONG $0xf040110f         // movups    oword [rax - 16], xmm0
+	WORD $0x110f; BYTE $0x08 // movups    oword [rax], xmm1
+	LONG $0x80e98348         // sub    rcx, -128
+	LONG $0x80e88348         // sub    rax, -128
+	LONG $0xf0c28348         // add    rdx, -16
+	JNE  LBB12_11
+
+LBB12_12:
+	WORD $0x394d; BYTE $0xca // cmp    r10, r9
+	JE   LBB12_19
+	LONG $0xcf3c8d4a         // lea    rdi, [rdi + 8*r9]
+	LONG $0xce348d4a         // lea    rsi, [rsi + 8*r9]
+
+LBB12_14:
+	LONG $0x08478d48         // lea    rax, [rdi + 8]
+	WORD $0x3949; BYTE $0xc3 // cmp    r11, rax
+	LONG $0xc3470f49         // cmova    rax, r11
+	WORD $0x8948; BYTE $0xf9 // mov    rcx, rdi
+	WORD $0xf748; BYTE $0xd1 // not    rcx
+	WORD $0x0148; BYTE $0xc1 // add    rcx, rax
+	WORD $0xc889             // mov    eax, ecx
+	WORD $0xe8c1; BYTE $0x03 // shr    eax, 3
+	WORD $0xc0ff             // inc    eax
+	LONG $0x07e08348         // and    rax, 7
+	JE   LBB12_17
+	WORD $0xf748; BYTE $0xd8 // neg    rax
+
+LBB12_16:
+	WORD $0x8b48; BYTE $0x16 // mov    rdx, qword [rsi]
+	LONG $0x08c68348         // add    rsi, 8
+	WORD $0x8948; BYTE $0x17 // mov    qword [rdi], rdx
+	LONG $0x08c78348         // add    rdi, 8
+	WORD $0xff48; BYTE $0xc0 // inc    rax
+	JNE  LBB12_16
+
+LBB12_17:
+	LONG $0x38f98348 // cmp    rcx, 56
+	JB   LBB12_19
+
+LBB12_18:
+	WORD $0x8b48; BYTE $0x06 // mov    rax, qword [rsi]
+	WORD $0x8948; BYTE $0x07 // mov    qword [rdi], rax
+	LONG $0x08468b48         // mov    rax, qword [rsi + 8]
+	LONG $0x08478948         // mov    qword [rdi + 8], rax
+	LONG $0x10468b48         // mov    rax, qword [rsi + 16]
+	LONG $0x10478948         // mov    qword [rdi + 16], rax
+	LONG $0x18468b48         // mov    rax, qword [rsi + 24]
+	LONG $0x18478948         // mov    qword [rdi + 24], rax
+	LONG $0x20468b48         // mov    rax, qword [rsi + 32]
+	LONG $0x20478948         // mov    qword [rdi + 32], rax
+	LONG $0x28468b48         // mov    rax, qword [rsi + 40]
+	LONG $0x28478948         // mov    qword [rdi + 40], rax
+	LONG $0x30468b48         // mov    rax, qword [rsi + 48]
+	LONG $0x30478948         // mov    qword [rdi + 48], rax
+	LONG $0x38468b48         // mov    rax, qword [rsi + 56]
+	LONG $0x38478948         // mov    qword [rdi + 56], rax
+	LONG $0x40c78348         // add    rdi, 64
+	LONG $0x40c68348         // add    rsi, 64
+	WORD $0x394c; BYTE $0xdf // cmp    rdi, r11
+	JB   LBB12_18
+
+LBB12_19:
+	RET
+
 TEXT ·_asm_memset_sse4_2(SB), $0-24
 
 	MOVQ addr+0(FP), DI
@@ -1556,19 +1700,19 @@ TEXT ·_asm_memset_sse4_2(SB), $0-24
 	MOVQ len+16(FP), DX
 
 	WORD $0x8548; BYTE $0xd2     // test    rdx, rdx
-	JLE  LBB12_13
+	JLE  LBB13_13
 	WORD $0x0148; BYTE $0xfa     // add    rdx, rdi
 	LONG $0x015f8d4c             // lea    r11, [rdi + 1]
 	WORD $0x394c; BYTE $0xda     // cmp    rdx, r11
 	LONG $0xda470f4c             // cmova    r11, rdx
 	WORD $0x2949; BYTE $0xfb     // sub    r11, rdi
 	LONG $0x20fb8349             // cmp    r11, 32
-	JB   LBB12_12
+	JB   LBB13_12
 	WORD $0x894d; BYTE $0xd8     // mov    r8, r11
 	LONG $0xe0e08349             // and    r8, -32
 	WORD $0x894d; BYTE $0xda     // mov    r10, r11
 	LONG $0xe0e28349             // and    r10, -32
-	JE   LBB12_12
+	JE   LBB13_12
 	LONG $0xc6b60f40             // movzx    eax, sil
 	LONG $0xc06e0f66             // movd    xmm0, eax
 	LONG $0xc9ef0f66             // pxor    xmm1, xmm1
@@ -1578,29 +1722,29 @@ TEXT ·_asm_memset_sse4_2(SB), $0-24
 	WORD $0xe9c1; BYTE $0x05     // shr    ecx, 5
 	WORD $0xc1ff                 // inc    ecx
 	LONG $0x07e18348             // and    rcx, 7
-	JE   LBB12_4
+	JE   LBB13_4
 	WORD $0xf748; BYTE $0xd9     // neg    rcx
 	WORD $0xc031                 // xor    eax, eax
 
-LBB12_6:
+LBB13_6:
 	LONG $0x047f0ff3; BYTE $0x07   // movdqu    oword [rdi + rax], xmm0
 	LONG $0x447f0ff3; WORD $0x1007 // movdqu    oword [rdi + rax + 16], xmm0
 	LONG $0x20c08348               // add    rax, 32
 	WORD $0xff48; BYTE $0xc1       // inc    rcx
-	JNE  LBB12_6
-	JMP  LBB12_7
+	JNE  LBB13_6
+	JMP  LBB13_7
 
-LBB12_4:
+LBB13_4:
 	WORD $0xc031 // xor    eax, eax
 
-LBB12_7:
+LBB13_7:
 	LONG $0xe0f98149; WORD $0x0000; BYTE $0x00 // cmp    r9, 224
-	JB   LBB12_10
+	JB   LBB13_10
 	WORD $0x894c; BYTE $0xd1                   // mov    rcx, r10
 	WORD $0x2948; BYTE $0xc1                   // sub    rcx, rax
 	QUAD $0x000000f007848d48                   // lea    rax, [rdi + rax + 240]
 
-LBB12_9:
+LBB13_9:
 	QUAD $0xffffff10807f0ff3                   // movdqu    oword [rax - 240], xmm0
 	QUAD $0xffffff20807f0ff3                   // movdqu    oword [rax - 224], xmm0
 	QUAD $0xffffff30807f0ff3                   // movdqu    oword [rax - 208], xmm0
@@ -1619,20 +1763,20 @@ LBB12_9:
 	LONG $0x007f0ff3                           // movdqu    oword [rax], xmm0
 	LONG $0x01000548; WORD $0x0000             // add    rax, 256
 	LONG $0x00c18148; WORD $0xffff; BYTE $0xff // add    rcx, -256
-	JNE  LBB12_9
+	JNE  LBB13_9
 
-LBB12_10:
+LBB13_10:
 	WORD $0x394d; BYTE $0xd3 // cmp    r11, r10
-	JE   LBB12_13
+	JE   LBB13_13
 	WORD $0x014c; BYTE $0xc7 // add    rdi, r8
 
-LBB12_12:
+LBB13_12:
 	WORD $0x8840; BYTE $0x37 // mov    byte [rdi], sil
 	WORD $0xff48; BYTE $0xc7 // inc    rdi
 	WORD $0x3948; BYTE $0xd7 // cmp    rdi, rdx
-	JB   LBB12_12
+	JB   LBB13_12
 
-LBB12_13:
+LBB13_13:
 	RET
 
 TEXT ·_asm_bitmap_get_bit_num_sse4_2(SB), $0-24
@@ -1641,7 +1785,7 @@ TEXT ·_asm_bitmap_get_bit_num_sse4_2(SB), $0-24
 	MOVQ len+8(FP), SI
 
 	WORD $0x8548; BYTE $0xf6 // test    rsi, rsi
-	JLE  LBB13_1
+	JLE  LBB14_1
 	LONG $0xf70c8d48         // lea    rcx, [rdi + 8*rsi]
 	LONG $0x08478d48         // lea    rax, [rdi + 8]
 	WORD $0x3948; BYTE $0xc1 // cmp    rcx, rax
@@ -1653,30 +1797,30 @@ TEXT ·_asm_bitmap_get_bit_num_sse4_2(SB), $0-24
 	WORD $0xeec1; BYTE $0x03 // shr    esi, 3
 	WORD $0xc6ff             // inc    esi
 	LONG $0x07e68348         // and    rsi, 7
-	JE   LBB13_3
+	JE   LBB14_3
 	WORD $0xf748; BYTE $0xde // neg    rsi
 	WORD $0xc031             // xor    eax, eax
 
-LBB13_5:
+LBB14_5:
 	LONG $0xb80f48f3; BYTE $0x17 // popcnt    rdx, qword [rdi]
 	LONG $0x08c78348             // add    rdi, 8
 	WORD $0x0148; BYTE $0xd0     // add    rax, rdx
 	WORD $0xff48; BYTE $0xc6     // inc    rsi
-	JNE  LBB13_5
-	JMP  LBB13_6
+	JNE  LBB14_5
+	JMP  LBB14_6
 
-LBB13_1:
+LBB14_1:
 	WORD $0xc031 // xor    eax, eax
-	JMP  LBB13_8
+	JMP  LBB14_8
 
-LBB13_3:
+LBB14_3:
 	WORD $0xc031 // xor    eax, eax
 
-LBB13_6:
+LBB14_6:
 	LONG $0x38f88349 // cmp    r8, 56
-	JB   LBB13_8
+	JB   LBB14_8
 
-LBB13_7:
+LBB14_7:
 	LONG $0xb80f48f3; BYTE $0x17   // popcnt    rdx, qword [rdi]
 	WORD $0x0148; BYTE $0xc2       // add    rdx, rax
 	LONG $0xb80f48f3; WORD $0x0847 // popcnt    rax, qword [rdi + 8]
@@ -1695,9 +1839,9 @@ LBB13_7:
 	WORD $0x0148; BYTE $0xd0       // add    rax, rdx
 	LONG $0x40c78348               // add    rdi, 64
 	WORD $0x3948; BYTE $0xcf       // cmp    rdi, rcx
-	JB   LBB13_7
+	JB   LBB14_7
 
-LBB13_8:
+LBB14_8:
 	MOVQ AX, ret+16(FP)
 	RET
 
@@ -1708,18 +1852,18 @@ TEXT ·_asm_bkdr_hash_sse4_2(SB), $0-32
 	MOVQ seed+16(FP), DX
 
 	WORD $0x8548; BYTE $0xf6 // test    rsi, rsi
-	JLE  LBB14_3
+	JLE  LBB15_3
 	WORD $0x0148; BYTE $0xfe // add    rsi, rdi
 
-LBB14_2:
+LBB15_2:
 	LONG $0x6bc26948; WORD $0x1409; BYTE $0x00 // imul    rax, rdx, 1313131
 	WORD $0xb60f; BYTE $0x17                   // movzx    edx, byte [rdi]
 	WORD $0xff48; BYTE $0xc7                   // inc    rdi
 	WORD $0x0148; BYTE $0xc2                   // add    rdx, rax
 	WORD $0x3948; BYTE $0xf7                   // cmp    rdi, rsi
-	JB   LBB14_2
+	JB   LBB15_2
 
-LBB14_3:
+LBB15_3:
 	WORD $0x8948; BYTE $0xd0 // mov    rax, rdx
 	MOVQ AX, ret+24(FP)
 	RET
@@ -1732,24 +1876,24 @@ TEXT ·_asm_multi_and_sum_sse4_2(SB), $0-40
 	MOVQ seed+24(FP), CX
 
 	WORD $0x8548; BYTE $0xd2 // test    rdx, rdx
-	JLE  LBB15_1
+	JLE  LBB16_1
 	WORD $0x0148; BYTE $0xfa // add    rdx, rdi
 	WORD $0x3145; BYTE $0xc0 // xor    r8d, r8d
 
-LBB15_3:
+LBB16_3:
 	WORD $0xb60f; BYTE $0x07 // movzx    eax, byte [rdi]
 	WORD $0xff48; BYTE $0xc7 // inc    rdi
 	LONG $0x06af0f48         // imul    rax, qword [rsi]
 	LONG $0x08c68348         // add    rsi, 8
 	WORD $0x0149; BYTE $0xc0 // add    r8, rax
 	WORD $0x3948; BYTE $0xd7 // cmp    rdi, rdx
-	JB   LBB15_3
-	JMP  LBB15_4
+	JB   LBB16_3
+	JMP  LBB16_4
 
-LBB15_1:
+LBB16_1:
 	WORD $0x3145; BYTE $0xc0 // xor    r8d, r8d
 
-LBB15_4:
+LBB16_4:
 	LONG $0x4eaf0f48; BYTE $0xf8 // imul    rcx, qword [rsi - 8]
 	WORD $0x014c; BYTE $0xc1     // add    rcx, r8
 	WORD $0x8948; BYTE $0xc8     // mov    rax, rcx
@@ -1764,46 +1908,42 @@ TEXT ·_asm_bitmap_get_bit_list_sse4_2(SB), $0-40
 	MOVQ len+24(FP), CX
 
 	WORD $0x8548; BYTE $0xc9               // test    rcx, rcx
-	JLE  LBB16_1
+	WORD $0x8948; BYTE $0xf0               // mov    rax, rsi
+	JLE  LBB17_6
 	LONG $0xcf048d4c                       // lea    r8, [rdi + 8*rcx]
-	WORD $0x3145; BYTE $0xd2               // xor    r10d, r10d
-	QUAD $0x9d71b4ca8b09b949; WORD $0x03f7 // mov    r9, 285870213051353865
-	WORD $0xc031                           // xor    eax, eax
+	QUAD $0x9d71b4ca8b09ba49; WORD $0x03f7 // mov    r10, 285870213051353865
+	WORD $0x8949; BYTE $0xf9               // mov    r9, rdi
+	WORD $0x8948; BYTE $0xf0               // mov    rax, rsi
 
-LBB16_3:
-	WORD $0x8b48; BYTE $0x0f     // mov    rcx, qword [rdi]
-	LONG $0x08c78348             // add    rdi, 8
-	WORD $0x8548; BYTE $0xc9     // test    rcx, rcx
-	JE   LBB16_6
-	LONG $0xb80f4cf3; BYTE $0xd9 // popcnt    r11, rcx
-	WORD $0x014c; BYTE $0xd8     // add    rax, r11
-	WORD $0xff49; BYTE $0xc3     // inc    r11
+LBB17_3:
+	WORD $0x8b49; BYTE $0x19 // mov    rbx, qword [r9]
+	LONG $0x08c18349         // add    r9, 8
+	WORD $0x8548; BYTE $0xdb // test    rbx, rbx
+	JE   LBB17_2
+	WORD $0x894c; BYTE $0xc9 // mov    rcx, r9
+	WORD $0x2948; BYTE $0xf9 // sub    rcx, rdi
+	QUAD $0xffffffc0cd1c8d4c // lea    r11, [8*rcx - 64]
 
-LBB16_5:
-	WORD $0x8948; BYTE $0xcb // mov    rbx, rcx
-	WORD $0xf748; BYTE $0xdb // neg    rbx
-	WORD $0x2148; BYTE $0xcb // and    rbx, rcx
-	LONG $0xd9af0f49         // imul    rbx, r9
-	LONG $0x3aebc148         // shr    rbx, 58
-	LONG $0x1a1cb60f         // movzx    ebx, byte [rdx + rbx]
-	WORD $0x014c; BYTE $0xd3 // add    rbx, r10
-	WORD $0x8948; BYTE $0x1e // mov    qword [rsi], rbx
-	LONG $0x08c68348         // add    rsi, 8
-	LONG $0xff598d48         // lea    rbx, [rcx - 1]
+LBB17_5:
+	WORD $0x8948; BYTE $0xd9 // mov    rcx, rbx
+	WORD $0xf748; BYTE $0xd9 // neg    rcx
 	WORD $0x2148; BYTE $0xd9 // and    rcx, rbx
-	WORD $0xff49; BYTE $0xcb // dec    r11
-	LONG $0x01fb8349         // cmp    r11, 1
-	JG   LBB16_5
+	LONG $0xcaaf0f49         // imul    rcx, r10
+	LONG $0x3ae9c148         // shr    rcx, 58
+	LONG $0x0a0cb60f         // movzx    ecx, byte [rdx + rcx]
+	WORD $0x014c; BYTE $0xd9 // add    rcx, r11
+	WORD $0x8948; BYTE $0x08 // mov    qword [rax], rcx
+	LONG $0x08c08348         // add    rax, 8
+	LONG $0xff4b8d48         // lea    rcx, [rbx - 1]
+	WORD $0x2148; BYTE $0xcb // and    rbx, rcx
+	JNE  LBB17_5
 
-LBB16_6:
-	LONG $0x40c28349         // add    r10, 64
-	WORD $0x394c; BYTE $0xc7 // cmp    rdi, r8
-	JB   LBB16_3
-	JMP  LBB16_7
+LBB17_2:
+	WORD $0x394d; BYTE $0xc1 // cmp    r9, r8
+	JB   LBB17_3
 
-LBB16_1:
-	WORD $0xc031 // xor    eax, eax
-
-LBB16_7:
+LBB17_6:
+	WORD $0x2948; BYTE $0xf0 // sub    rax, rsi
+	LONG $0x03f8c148         // sar    rax, 3
 	MOVQ AX, ret+32(FP)
 	RET

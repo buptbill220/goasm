@@ -180,6 +180,18 @@ func BenchmarkAsmMemcopy(b *testing.B) {
 	}
 }
 
+func BenchmarkGoMemcopyUint64(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		memcopy_uint64(s0, s7)
+	}
+}
+
+func BenchmarkAsmMemcopyUint64(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		AsmMemcopyUint64(s0, s7)
+	}
+}
+
 func BenchmarkGoMemset(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		memset(sUint8, 0x12)

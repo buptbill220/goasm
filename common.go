@@ -31,6 +31,7 @@ var (
 	AsmVectorOr4 func([]int64, []int64, []int64, []int64, []int64)
 	AsmVectorAndN func([]int64, []int64)
 	AsmMemcopy func([]uint8, []uint8)
+	AsmMemcopyUint64 func([]uint64, []uint64)
 	AsmMemset func([]uint8, uint8)
 	AsmBitmapGetBitNum func([]uint64) uint64
 	AsmBkdrHash func(string, uint64) uint64
@@ -82,6 +83,7 @@ func init() {
 		AsmVectorOr4 = asm_or4_avx2
 		AsmVectorAndN = asm_andn_avx2
 		AsmMemcopy = asm_memcopy_avx2
+		AsmMemcopyUint64 = asm_memcopy_uint64_avx2
 		AsmMemset = asm_memset_avx2
 		AsmBitmapGetBitNum = asm_bitmap_get_bit_num_avx2
 		AsmBitmapGetBitList = asm_bitmap_get_bit_list_avx2
@@ -101,6 +103,7 @@ func init() {
 		AsmVectorOr4 = asm_or4_avx
 		AsmVectorAndN = asm_andn_avx
 		AsmMemcopy = asm_memcopy_avx
+		AsmMemcopyUint64 = asm_memcopy_uint64_avx
 		AsmMemset = asm_memset_avx
 		AsmBitmapGetBitNum = asm_bitmap_get_bit_num_avx
 		AsmBitmapGetBitList = asm_bitmap_get_bit_list_avx
@@ -121,6 +124,7 @@ func init() {
 		AsmVectorOr4 = asm_or4_sse4_2
 		AsmVectorAndN = asm_andn_sse4_2
 		AsmMemcopy = asm_memcopy_sse4_2
+		AsmMemcopyUint64 = asm_memcopy_uint64_sse4_2
 		AsmMemset = asm_memset_sse4_2
 		AsmBitmapGetBitNum = asm_bitmap_get_bit_num_sse4_2
 		AsmBitmapGetBitList = asm_bitmap_get_bit_list_sse4_2
@@ -140,6 +144,7 @@ func init() {
 		AsmVectorOr4 = vectorOr4
 		AsmVectorAndN = vectorAndn
 		AsmMemcopy = memcopy
+		AsmMemcopyUint64 = memcopy_uint64
 		AsmMemset = memset
 		AsmBitmapGetBitNum = bitmapGetBitNum
 		AsmBitmapGetBitList = bitmapGetBitList
@@ -242,6 +247,10 @@ func memcopy(a []uint8, b []uint8) {
 	copy(a, b)
 }
 
+func memcopy_uint64(a []uint64, b []uint64) {
+	copy(a, b)
+}
+
 func memset(a []uint8, b uint8) {
 	if len(a) > 0 {
 		a[0] = b
@@ -273,15 +282,15 @@ func bitmapGetBitNum(a []uint64) uint64 {
 func bitmapGetBitList(a, b []uint64) uint64 {
 	var i uint64
 	pos := uint64(0)
-	base := uint64(0)
-	for _, num := range a {
+	//base := uint64(0)
+	for j, num := range a {
 		for num > 0 {
 			i = uint64(bits.TrailingZeros64(num))
 			num = num & (num - 1)
-			b[pos] = base+i
+			b[pos] = uint64(j<<6)+i
 			pos++
 		}
-		base += 64
+		//base += 64
 	}
 	return pos
 }

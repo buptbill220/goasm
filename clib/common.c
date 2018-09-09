@@ -121,6 +121,13 @@ void NAME(asm_memcopy)(uint8_t *a, uint8_t *b, int64_t len) {
     }
 }
 
+void NAME(asm_memcopy_uint64)(uint64_t *a, uint64_t *b, int64_t len) {
+    uint64_t *end = a + len;
+    while (a < end) {
+        *a++ = *b++;
+    }
+}
+
 void NAME(asm_memset)(uint8_t *a, uint8_t v, int64_t len) {
     uint8_t *end = a + len;
     while (a < end) {
@@ -161,30 +168,29 @@ uint64_t NAME(asm_multi_and_sum)(uint8_t *a, uint64_t *b, int64_t len, uint64_t 
     sum += seed * (*--b);
     return sum;
 }
-
+/*
 static const uint8_t deBruijn64tab[64] = {
 	0, 1, 56, 2, 57, 49, 28, 3, 61, 58, 42, 50, 38, 29, 17, 4,
 	62, 47, 59, 36, 45, 43, 51, 22, 53, 39, 33, 30, 24, 18, 12, 5,
 	63, 55, 48, 27, 60, 41, 37, 16, 46, 35, 44, 21, 52, 32, 23, 11,
 	54, 26, 40, 15, 34, 20, 31, 10, 25, 14, 19, 9, 13, 8, 7, 6
 };
-
+*/
 uint64_t NAME(asm_bitmap_get_bit_list)(uint64_t *a, uint64_t *b, uint8_t* deBruijn64tab, int64_t len) {
     uint64_t *end = a + len;
-    uint64_t ret_len = 0;
     uint64_t tmp = 0;
-    uint64_t base = 0;
-    uint64_t pos = 0;
+    //uint64_t base = 0;
+    uint64_t *cur = b, *cur1 = a;
+    uint64_t diff = 0;
     while (a < end) {
         tmp = *a++;
+        diff = (a-cur1-1);
         while(tmp) {
             //__asm__ ("TZCNT %1,%0" : "=r" (pos) : "m" (tmp));
-            pos = (uint64_t)deBruijn64tab[(tmp&-tmp)*deBruijn64>>58];
-            *b++ = pos + base;
+            *cur++ = deBruijn64tab[(tmp&-tmp)*deBruijn64>>58] + (diff << 6);
             tmp = tmp & (tmp - 1);
-            ++ret_len;
         }
-        base += 64;
+        //base += 64;
     }
-    return ret_len;
+    return (cur-b);
 }

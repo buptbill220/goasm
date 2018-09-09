@@ -1659,6 +1659,155 @@ asm_memcopy_avx2:                       # @asm_memcopy_avx2
 .Lfunc_end11:
 	.size	asm_memcopy_avx2, .Lfunc_end11-asm_memcopy_avx2
 
+	.globl	asm_memcopy_uint64_avx2
+	.p2align	4, 0x90
+	.type	asm_memcopy_uint64_avx2,@function
+asm_memcopy_uint64_avx2:                # @asm_memcopy_uint64_avx2
+# BB#0:
+	push	rbp
+	mov	rbp, rsp
+	and	rsp, -8
+	test	rdx, rdx
+	jle	.LBB12_18
+# BB#1:
+	lea	r10, [rdi + 8*rdx]
+	lea	rax, [rdi + 8]
+	cmp	r10, rax
+	mov	r9, rax
+	cmova	r9, r10
+	mov	rcx, rdi
+	not	rcx
+	add	r9, rcx
+	shr	r9, 3
+	inc	r9
+	cmp	r9, 16
+	jb	.LBB12_13
+# BB#2:
+	movabs	r8, 4611686018427387888
+	and	r8, r9
+	je	.LBB12_13
+# BB#3:
+	cmp	r10, rax
+	cmova	rax, r10
+	add	rax, rcx
+	and	rax, -8
+	lea	rcx, [rsi + rax + 8]
+	cmp	rcx, rdi
+	jbe	.LBB12_5
+# BB#4:
+	lea	rax, [rdi + rax + 8]
+	cmp	rax, rsi
+	ja	.LBB12_13
+.LBB12_5:
+	lea	rcx, [r8 - 16]
+	mov	rax, rcx
+	shr	rax, 4
+	bt	rcx, 4
+	jb	.LBB12_6
+# BB#7:
+	vmovups	ymm0, ymmword ptr [rsi]
+	vmovups	ymm1, ymmword ptr [rsi + 32]
+	vmovups	ymm2, ymmword ptr [rsi + 64]
+	vmovups	ymm3, ymmword ptr [rsi + 96]
+	vmovups	ymmword ptr [rdi], ymm0
+	vmovups	ymmword ptr [rdi + 32], ymm1
+	vmovups	ymmword ptr [rdi + 64], ymm2
+	vmovups	ymmword ptr [rdi + 96], ymm3
+	mov	r11d, 16
+	jmp	.LBB12_8
+.LBB12_6:
+	xor	r11d, r11d
+.LBB12_8:
+	test	rax, rax
+	je	.LBB12_11
+# BB#9:
+	mov	rdx, r8
+	sub	rdx, r11
+	lea	rcx, [rsi + 8*r11 + 224]
+	lea	rax, [rdi + 8*r11 + 224]
+	.p2align	4, 0x90
+.LBB12_10:                              # =>This Inner Loop Header: Depth=1
+	vmovups	ymm0, ymmword ptr [rcx - 224]
+	vmovups	ymm1, ymmword ptr [rcx - 192]
+	vmovups	ymm2, ymmword ptr [rcx - 160]
+	vmovups	ymm3, ymmword ptr [rcx - 128]
+	vmovups	ymmword ptr [rax - 224], ymm0
+	vmovups	ymmword ptr [rax - 192], ymm1
+	vmovups	ymmword ptr [rax - 160], ymm2
+	vmovups	ymmword ptr [rax - 128], ymm3
+	vmovups	ymm0, ymmword ptr [rcx - 96]
+	vmovups	ymm1, ymmword ptr [rcx - 64]
+	vmovups	ymm2, ymmword ptr [rcx - 32]
+	vmovups	ymm3, ymmword ptr [rcx]
+	vmovups	ymmword ptr [rax - 96], ymm0
+	vmovups	ymmword ptr [rax - 64], ymm1
+	vmovups	ymmword ptr [rax - 32], ymm2
+	vmovups	ymmword ptr [rax], ymm3
+	add	rcx, 256
+	add	rax, 256
+	add	rdx, -32
+	jne	.LBB12_10
+.LBB12_11:
+	cmp	r9, r8
+	je	.LBB12_18
+# BB#12:
+	lea	rdi, [rdi + 8*r8]
+	lea	rsi, [rsi + 8*r8]
+.LBB12_13:
+	lea	rax, [rdi + 8]
+	cmp	r10, rax
+	cmova	rax, r10
+	mov	rcx, rdi
+	not	rcx
+	add	rcx, rax
+	mov	eax, ecx
+	shr	eax, 3
+	inc	eax
+	and	rax, 7
+	je	.LBB12_16
+# BB#14:
+	neg	rax
+	.p2align	4, 0x90
+.LBB12_15:                              # =>This Inner Loop Header: Depth=1
+	mov	rdx, qword ptr [rsi]
+	add	rsi, 8
+	mov	qword ptr [rdi], rdx
+	add	rdi, 8
+	inc	rax
+	jne	.LBB12_15
+.LBB12_16:
+	cmp	rcx, 56
+	jb	.LBB12_18
+	.p2align	4, 0x90
+.LBB12_17:                              # =>This Inner Loop Header: Depth=1
+	mov	rax, qword ptr [rsi]
+	mov	qword ptr [rdi], rax
+	mov	rax, qword ptr [rsi + 8]
+	mov	qword ptr [rdi + 8], rax
+	mov	rax, qword ptr [rsi + 16]
+	mov	qword ptr [rdi + 16], rax
+	mov	rax, qword ptr [rsi + 24]
+	mov	qword ptr [rdi + 24], rax
+	mov	rax, qword ptr [rsi + 32]
+	mov	qword ptr [rdi + 32], rax
+	mov	rax, qword ptr [rsi + 40]
+	mov	qword ptr [rdi + 40], rax
+	mov	rax, qword ptr [rsi + 48]
+	mov	qword ptr [rdi + 48], rax
+	mov	rax, qword ptr [rsi + 56]
+	mov	qword ptr [rdi + 56], rax
+	add	rdi, 64
+	add	rsi, 64
+	cmp	rdi, r10
+	jb	.LBB12_17
+.LBB12_18:
+	mov	rsp, rbp
+	pop	rbp
+	vzeroupper
+	ret
+.Lfunc_end12:
+	.size	asm_memcopy_uint64_avx2, .Lfunc_end12-asm_memcopy_uint64_avx2
+
 	.globl	asm_memset_avx2
 	.p2align	4, 0x90
 	.type	asm_memset_avx2,@function
@@ -1668,7 +1817,7 @@ asm_memset_avx2:                        # @asm_memset_avx2
 	mov	rbp, rsp
 	and	rsp, -8
 	test	rdx, rdx
-	jle	.LBB12_13
+	jle	.LBB13_13
 # BB#1:
 	add	rdx, rdi
 	lea	r11, [rdi + 1]
@@ -1676,13 +1825,13 @@ asm_memset_avx2:                        # @asm_memset_avx2
 	cmova	r11, rdx
 	sub	r11, rdi
 	cmp	r11, 128
-	jb	.LBB12_12
+	jb	.LBB13_12
 # BB#2:
 	mov	r8, r11
 	and	r8, -128
 	mov	r10, r11
 	and	r10, -128
-	je	.LBB12_12
+	je	.LBB13_12
 # BB#3:
 	vmovd	xmm0, esi
 	vpbroadcastb	ymm0, xmm0
@@ -1691,31 +1840,31 @@ asm_memset_avx2:                        # @asm_memset_avx2
 	shr	eax, 7
 	inc	eax
 	and	rax, 3
-	je	.LBB12_4
+	je	.LBB13_4
 # BB#5:
 	neg	rax
 	xor	ecx, ecx
 	.p2align	4, 0x90
-.LBB12_6:                               # =>This Inner Loop Header: Depth=1
+.LBB13_6:                               # =>This Inner Loop Header: Depth=1
 	vmovdqu	ymmword ptr [rdi + rcx], ymm0
 	vmovdqu	ymmword ptr [rdi + rcx + 32], ymm0
 	vmovdqu	ymmword ptr [rdi + rcx + 64], ymm0
 	vmovdqu	ymmword ptr [rdi + rcx + 96], ymm0
 	sub	rcx, -128
 	inc	rax
-	jne	.LBB12_6
-	jmp	.LBB12_7
-.LBB12_4:
+	jne	.LBB13_6
+	jmp	.LBB13_7
+.LBB13_4:
 	xor	ecx, ecx
-.LBB12_7:
+.LBB13_7:
 	cmp	r9, 384
-	jb	.LBB12_10
+	jb	.LBB13_10
 # BB#8:
 	mov	rax, r10
 	sub	rax, rcx
 	lea	rcx, [rdi + rcx + 480]
 	.p2align	4, 0x90
-.LBB12_9:                               # =>This Inner Loop Header: Depth=1
+.LBB13_9:                               # =>This Inner Loop Header: Depth=1
 	vmovdqu	ymmword ptr [rcx - 480], ymm0
 	vmovdqu	ymmword ptr [rcx - 448], ymm0
 	vmovdqu	ymmword ptr [rcx - 416], ymm0
@@ -1734,31 +1883,31 @@ asm_memset_avx2:                        # @asm_memset_avx2
 	vmovdqu	ymmword ptr [rcx], ymm0
 	add	rcx, 512
 	add	rax, -512
-	jne	.LBB12_9
-.LBB12_10:
+	jne	.LBB13_9
+.LBB13_10:
 	cmp	r11, r10
-	je	.LBB12_13
+	je	.LBB13_13
 # BB#11:
 	add	rdi, r8
 	.p2align	4, 0x90
-.LBB12_12:                              # =>This Inner Loop Header: Depth=1
+.LBB13_12:                              # =>This Inner Loop Header: Depth=1
 	mov	byte ptr [rdi], sil
 	inc	rdi
 	cmp	rdi, rdx
-	jb	.LBB12_12
-.LBB12_13:
+	jb	.LBB13_12
+.LBB13_13:
 	mov	rsp, rbp
 	pop	rbp
 	vzeroupper
 	ret
-.Lfunc_end12:
-	.size	asm_memset_avx2, .Lfunc_end12-asm_memset_avx2
+.Lfunc_end13:
+	.size	asm_memset_avx2, .Lfunc_end13-asm_memset_avx2
 
 	.section	.rodata.cst32,"aM",@progbits,32
 	.p2align	5
-.LCPI13_0:
+.LCPI14_0:
 	.zero	32,15
-.LCPI13_1:
+.LCPI14_1:
 	.byte	0                       # 0x0
 	.byte	1                       # 0x1
 	.byte	1                       # 0x1
@@ -1801,7 +1950,7 @@ asm_bitmap_get_bit_num_avx2:            # @asm_bitmap_get_bit_num_avx2
 	mov	rbp, rsp
 	and	rsp, -8
 	test	rsi, rsi
-	jle	.LBB13_1
+	jle	.LBB14_1
 # BB#2:
 	lea	rcx, [rdi + 8*rsi]
 	lea	rax, [rdi + 8]
@@ -1813,31 +1962,31 @@ asm_bitmap_get_bit_num_avx2:            # @asm_bitmap_get_bit_num_avx2
 	shr	rdx, 3
 	inc	rdx
 	cmp	rdx, 16
-	jae	.LBB13_4
+	jae	.LBB14_4
 # BB#3:
 	xor	eax, eax
-	jmp	.LBB13_14
-.LBB13_1:
+	jmp	.LBB14_14
+.LBB14_1:
 	xor	eax, eax
-	jmp	.LBB13_15
-.LBB13_4:
+	jmp	.LBB14_15
+.LBB14_4:
 	movabs	r8, 4611686018427387888
 	and	r8, rdx
-	je	.LBB13_5
+	je	.LBB14_5
 # BB#6:
 	lea	rsi, [r8 - 16]
 	mov	rax, rsi
 	shr	rax, 4
 	bt	rsi, 4
-	jb	.LBB13_7
+	jb	.LBB14_7
 # BB#8:
 	vmovdqu	ymm0, ymmword ptr [rdi]
 	vmovdqu	ymm1, ymmword ptr [rdi + 32]
 	vmovdqu	ymm2, ymmword ptr [rdi + 64]
 	vmovdqu	ymm3, ymmword ptr [rdi + 96]
-	vmovdqa	ymm4, ymmword ptr [rip + .LCPI13_0] # ymm4 = [15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15]
+	vmovdqa	ymm4, ymmword ptr [rip + .LCPI14_0] # ymm4 = [15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15]
 	vpand	ymm5, ymm0, ymm4
-	vmovdqa	ymm6, ymmword ptr [rip + .LCPI13_1] # ymm6 = [0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4]
+	vmovdqa	ymm6, ymmword ptr [rip + .LCPI14_1] # ymm6 = [0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4]
 	vpshufb	ymm5, ymm6, ymm5
 	vpsrlw	ymm0, ymm0, 4
 	vpand	ymm0, ymm0, ymm4
@@ -1867,28 +2016,28 @@ asm_bitmap_get_bit_num_avx2:            # @asm_bitmap_get_bit_num_avx2
 	vpaddb	ymm3, ymm3, ymm7
 	vpsadbw	ymm3, ymm3, ymm5
 	mov	esi, 16
-	jmp	.LBB13_9
-.LBB13_5:
+	jmp	.LBB14_9
+.LBB14_5:
 	xor	eax, eax
-	jmp	.LBB13_14
-.LBB13_7:
+	jmp	.LBB14_14
+.LBB14_7:
 	vpxor	ymm0, ymm0, ymm0
 	xor	esi, esi
 	vpxor	ymm1, ymm1, ymm1
 	vpxor	ymm2, ymm2, ymm2
 	vpxor	ymm3, ymm3, ymm3
-.LBB13_9:
+.LBB14_9:
 	test	rax, rax
-	je	.LBB13_12
+	je	.LBB14_12
 # BB#10:
 	mov	rax, r8
 	sub	rax, rsi
 	lea	rsi, [rdi + 8*rsi + 224]
-	vmovdqa	ymm4, ymmword ptr [rip + .LCPI13_0] # ymm4 = [15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15]
-	vmovdqa	ymm5, ymmword ptr [rip + .LCPI13_1] # ymm5 = [0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4]
+	vmovdqa	ymm4, ymmword ptr [rip + .LCPI14_0] # ymm4 = [15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15]
+	vmovdqa	ymm5, ymmword ptr [rip + .LCPI14_1] # ymm5 = [0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4]
 	vpxor	ymm6, ymm6, ymm6
 	.p2align	4, 0x90
-.LBB13_11:                              # =>This Inner Loop Header: Depth=1
+.LBB14_11:                              # =>This Inner Loop Header: Depth=1
 	vmovdqu	ymm7, ymmword ptr [rsi - 224]
 	vmovdqu	ymm8, ymmword ptr [rsi - 192]
 	vmovdqu	ymm9, ymmword ptr [rsi - 160]
@@ -1963,8 +2112,8 @@ asm_bitmap_get_bit_num_avx2:            # @asm_bitmap_get_bit_num_avx2
 	vpaddq	ymm3, ymm3, ymm10
 	add	rsi, 256
 	add	rax, -32
-	jne	.LBB13_11
-.LBB13_12:
+	jne	.LBB14_11
+.LBB14_12:
 	vpaddq	ymm0, ymm0, ymm2
 	vpaddq	ymm1, ymm1, ymm3
 	vpaddq	ymm0, ymm0, ymm1
@@ -1974,23 +2123,23 @@ asm_bitmap_get_bit_num_avx2:            # @asm_bitmap_get_bit_num_avx2
 	vpaddq	ymm0, ymm0, ymm1
 	vmovq	rax, xmm0
 	cmp	rdx, r8
-	je	.LBB13_15
+	je	.LBB14_15
 # BB#13:
 	lea	rdi, [rdi + 8*r8]
 	.p2align	4, 0x90
-.LBB13_14:                              # =>This Inner Loop Header: Depth=1
+.LBB14_14:                              # =>This Inner Loop Header: Depth=1
 	popcnt	rdx, qword ptr [rdi]
 	add	rdi, 8
 	add	rax, rdx
 	cmp	rdi, rcx
-	jb	.LBB13_14
-.LBB13_15:
+	jb	.LBB14_14
+.LBB14_15:
 	mov	rsp, rbp
 	pop	rbp
 	vzeroupper
 	ret
-.Lfunc_end13:
-	.size	asm_bitmap_get_bit_num_avx2, .Lfunc_end13-asm_bitmap_get_bit_num_avx2
+.Lfunc_end14:
+	.size	asm_bitmap_get_bit_num_avx2, .Lfunc_end14-asm_bitmap_get_bit_num_avx2
 
 	.globl	asm_bkdr_hash_avx2
 	.p2align	4, 0x90
@@ -2001,24 +2150,24 @@ asm_bkdr_hash_avx2:                     # @asm_bkdr_hash_avx2
 	mov	rbp, rsp
 	and	rsp, -8
 	test	rsi, rsi
-	jle	.LBB14_3
+	jle	.LBB15_3
 # BB#1:
 	add	rsi, rdi
 	.p2align	4, 0x90
-.LBB14_2:                               # =>This Inner Loop Header: Depth=1
+.LBB15_2:                               # =>This Inner Loop Header: Depth=1
 	imul	rax, rdx, 1313131
 	movzx	edx, byte ptr [rdi]
 	inc	rdi
 	add	rdx, rax
 	cmp	rdi, rsi
-	jb	.LBB14_2
-.LBB14_3:
+	jb	.LBB15_2
+.LBB15_3:
 	mov	rax, rdx
 	mov	rsp, rbp
 	pop	rbp
 	ret
-.Lfunc_end14:
-	.size	asm_bkdr_hash_avx2, .Lfunc_end14-asm_bkdr_hash_avx2
+.Lfunc_end15:
+	.size	asm_bkdr_hash_avx2, .Lfunc_end15-asm_bkdr_hash_avx2
 
 	.globl	asm_multi_and_sum_avx2
 	.p2align	4, 0x90
@@ -2030,7 +2179,7 @@ asm_multi_and_sum_avx2:                 # @asm_multi_and_sum_avx2
 	push	rbx
 	and	rsp, -8
 	test	rdx, rdx
-	jle	.LBB15_1
+	jle	.LBB16_1
 # BB#2:
 	add	rdx, rdi
 	lea	r9, [rdi + 1]
@@ -2038,13 +2187,13 @@ asm_multi_and_sum_avx2:                 # @asm_multi_and_sum_avx2
 	cmova	r9, rdx
 	sub	r9, rdi
 	cmp	r9, 16
-	jb	.LBB15_3
+	jb	.LBB16_3
 # BB#4:
 	mov	rbx, r9
 	and	rbx, -16
 	mov	r10, r9
 	and	r10, -16
-	je	.LBB15_3
+	je	.LBB16_3
 # BB#5:
 	add	rbx, rdi
 	lea	r8, [rsi + 8*r10]
@@ -2056,7 +2205,7 @@ asm_multi_and_sum_avx2:                 # @asm_multi_and_sum_avx2
 	vpxor	ymm2, ymm2, ymm2
 	vpxor	ymm3, ymm3, ymm3
 	.p2align	4, 0x90
-.LBB15_6:                               # =>This Inner Loop Header: Depth=1
+.LBB16_6:                               # =>This Inner Loop Header: Depth=1
 	vpmovzxbq	ymm6, dword ptr [rdi - 12] # ymm6 = mem[0],zero,zero,zero,zero,zero,zero,zero,mem[1],zero,zero,zero,zero,zero,zero,zero,mem[2],zero,zero,zero,zero,zero,zero,zero,mem[3],zero,zero,zero,zero,zero,zero,zero
 	vpmovzxbq	ymm7, dword ptr [rdi - 8] # ymm7 = mem[0],zero,zero,zero,zero,zero,zero,zero,mem[1],zero,zero,zero,zero,zero,zero,zero,mem[2],zero,zero,zero,zero,zero,zero,zero,mem[3],zero,zero,zero,zero,zero,zero,zero
 	vpmovzxbq	ymm8, dword ptr [rdi - 4] # ymm8 = mem[0],zero,zero,zero,zero,zero,zero,zero,mem[1],zero,zero,zero,zero,zero,zero,zero,mem[2],zero,zero,zero,zero,zero,zero,zero,mem[3],zero,zero,zero,zero,zero,zero,zero
@@ -2108,7 +2257,7 @@ asm_multi_and_sum_avx2:                 # @asm_multi_and_sum_avx2
 	sub	rsi, -128
 	add	rdi, 16
 	add	r11, -16
-	jne	.LBB15_6
+	jne	.LBB16_6
 # BB#7:
 	vpaddq	ymm0, ymm1, ymm0
 	vpaddq	ymm0, ymm2, ymm0
@@ -2119,26 +2268,26 @@ asm_multi_and_sum_avx2:                 # @asm_multi_and_sum_avx2
 	vpaddq	ymm0, ymm0, ymm1
 	vmovq	rax, xmm0
 	cmp	r9, r10
-	jne	.LBB15_8
-	jmp	.LBB15_9
-.LBB15_3:
+	jne	.LBB16_8
+	jmp	.LBB16_9
+.LBB16_3:
 	xor	eax, eax
 	mov	rbx, rdi
 	mov	r8, rsi
 	.p2align	4, 0x90
-.LBB15_8:                               # =>This Inner Loop Header: Depth=1
+.LBB16_8:                               # =>This Inner Loop Header: Depth=1
 	movzx	esi, byte ptr [rbx]
 	inc	rbx
 	imul	rsi, qword ptr [r8]
 	add	r8, 8
 	add	rax, rsi
 	cmp	rbx, rdx
-	jb	.LBB15_8
-	jmp	.LBB15_9
-.LBB15_1:
+	jb	.LBB16_8
+	jmp	.LBB16_9
+.LBB16_1:
 	xor	eax, eax
 	mov	r8, rsi
-.LBB15_9:
+.LBB16_9:
 	imul	rcx, qword ptr [r8 - 8]
 	add	rcx, rax
 	mov	rax, rcx
@@ -2147,8 +2296,8 @@ asm_multi_and_sum_avx2:                 # @asm_multi_and_sum_avx2
 	pop	rbp
 	vzeroupper
 	ret
-.Lfunc_end15:
-	.size	asm_multi_and_sum_avx2, .Lfunc_end15-asm_multi_and_sum_avx2
+.Lfunc_end16:
+	.size	asm_multi_and_sum_avx2, .Lfunc_end16-asm_multi_and_sum_avx2
 
 	.globl	asm_bitmap_get_bit_list_avx2
 	.p2align	4, 0x90
@@ -2159,55 +2308,52 @@ asm_bitmap_get_bit_list_avx2:           # @asm_bitmap_get_bit_list_avx2
 	mov	rbp, rsp
 	push	rbx
 	and	rsp, -8
+	mov	rax, rsi
 	test	rcx, rcx
-	jle	.LBB16_1
-# BB#2:
+	jle	.LBB17_6
+# BB#1:
 	lea	r8, [rdi + 8*rcx]
-	xor	r10d, r10d
-	movabs	r9, 285870213051353865
-	xor	eax, eax
+	movabs	r10, 285870213051353865
+	mov	r9, rdi
+	mov	rax, rsi
 	.p2align	4, 0x90
-.LBB16_3:                               # =>This Loop Header: Depth=1
-                                        #     Child Loop BB16_5 Depth 2
-	mov	rcx, qword ptr [rdi]
-	add	rdi, 8
-	test	rcx, rcx
-	je	.LBB16_6
-# BB#4:                                 #   in Loop: Header=BB16_3 Depth=1
-	popcnt	r11, rcx
-	add	rax, r11
-	inc	r11
+.LBB17_3:                               # =>This Loop Header: Depth=1
+                                        #     Child Loop BB17_5 Depth 2
+	mov	rbx, qword ptr [r9]
+	add	r9, 8
+	test	rbx, rbx
+	je	.LBB17_2
+# BB#4:                                 #   in Loop: Header=BB17_3 Depth=1
+	mov	rcx, r9
+	sub	rcx, rdi
+	lea	r11, [8*rcx - 64]
 	.p2align	4, 0x90
-.LBB16_5:                               #   Parent Loop BB16_3 Depth=1
+.LBB17_5:                               #   Parent Loop BB17_3 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
-	mov	rbx, rcx
-	neg	rbx
-	and	rbx, rcx
-	imul	rbx, r9
-	shr	rbx, 58
-	movzx	ebx, byte ptr [rdx + rbx]
-	add	rbx, r10
-	mov	qword ptr [rsi], rbx
-	add	rsi, 8
-	lea	rbx, [rcx - 1]
+	mov	rcx, rbx
+	neg	rcx
 	and	rcx, rbx
-	dec	r11
-	cmp	r11, 1
-	jg	.LBB16_5
-.LBB16_6:                               #   in Loop: Header=BB16_3 Depth=1
-	add	r10, 64
-	cmp	rdi, r8
-	jb	.LBB16_3
-	jmp	.LBB16_7
-.LBB16_1:
-	xor	eax, eax
-.LBB16_7:
+	imul	rcx, r10
+	shr	rcx, 58
+	movzx	ecx, byte ptr [rdx + rcx]
+	add	rcx, r11
+	mov	qword ptr [rax], rcx
+	add	rax, 8
+	lea	rcx, [rbx - 1]
+	and	rbx, rcx
+	jne	.LBB17_5
+.LBB17_2:                               #   in Loop: Header=BB17_3 Depth=1
+	cmp	r9, r8
+	jb	.LBB17_3
+.LBB17_6:
+	sub	rax, rsi
+	sar	rax, 3
 	lea	rsp, [rbp - 8]
 	pop	rbx
 	pop	rbp
 	ret
-.Lfunc_end16:
-	.size	asm_bitmap_get_bit_list_avx2, .Lfunc_end16-asm_bitmap_get_bit_list_avx2
+.Lfunc_end17:
+	.size	asm_bitmap_get_bit_list_avx2, .Lfunc_end17-asm_bitmap_get_bit_list_avx2
 
 
 	.ident	"Apple LLVM version 8.1.0 (clang-802.0.42)"
