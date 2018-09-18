@@ -194,3 +194,20 @@ uint64_t NAME(asm_bitmap_get_bit_list)(uint64_t *a, uint64_t *b, uint8_t* deBrui
     }
     return (cur-b);
 }
+
+void NAME(asm_bitmap_bit_one_mask)(uint64_t *a, uint64_t *mask, int64_t len) {
+    uint64_t *end = a + len;
+    uint64_t mask_pos = 0;
+    uint64_t num = 0;
+    while (a < end) {
+        num = *a;
+        while(num) {
+            if (((mask[mask_pos>>6] >> (mask_pos&0x3f)) & 1) == 0) {
+                *a &= ~(num & -num);
+            }
+            num &= (num - 1);
+           ++mask_pos;
+        }
+        ++a;
+    }
+}

@@ -258,3 +258,16 @@ func BenchmarkAsmStringAdSum(b *testing.B) {
 		AsmHashStringAndSum(sHashUint8_1, bkdrHashIndex, uint64(i))
 	}
 }
+
+func BenchmarkGoBitmapBitOneMask(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		bitmapBitOneMask(s4, s5)
+
+	}
+}
+
+func BenchmarkAsmBitmapBitOneMask(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		AsmBitmapBitOneMask(s6, s7)
+	}
+}

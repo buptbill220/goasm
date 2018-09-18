@@ -383,3 +383,21 @@ func TestAsmStringAdSum(t *testing.T) {
 		assert.Equal(t, c, c1)
 	}
 }
+
+
+func TestAsmBitmapOneBitMasl(t *testing.T) {
+	for i := 0; i < 4; i++ {
+		a, a1 := GetArrayUInt64()
+		c, c1 := GetArrayUInt64()
+		AsmBitmapBitOneMask(a, c)
+		bitmapBitOneMask(a1, c1)
+		for j, v := range a {
+			assert.Equal(t, v, a1[j])
+		}
+	}
+	a := []uint64{0xff,0xff}
+	c := []uint64{0x33}
+	AsmBitmapBitOneMask(a, c)
+	assert.Equal(t, a[0], uint64(0x33))
+	assert.Equal(t, a[1], uint64(0x00))
+}

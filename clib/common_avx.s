@@ -2096,6 +2096,58 @@ asm_bitmap_get_bit_list_avx:            # @asm_bitmap_get_bit_list_avx
 .Lfunc_end17:
 	.size	asm_bitmap_get_bit_list_avx, .Lfunc_end17-asm_bitmap_get_bit_list_avx
 
+	.globl	asm_bitmap_bit_one_mask_avx
+	.p2align	4, 0x90
+	.type	asm_bitmap_bit_one_mask_avx,@function
+asm_bitmap_bit_one_mask_avx:            # @asm_bitmap_bit_one_mask_avx
+# BB#0:
+	push	rbp
+	mov	rbp, rsp
+	and	rsp, -8
+	test	rdx, rdx
+	jle	.LBB18_8
+# BB#1:
+	lea	r8, [rdi + 8*rdx]
+	xor	edx, edx
+	.p2align	4, 0x90
+.LBB18_2:                               # =>This Loop Header: Depth=1
+                                        #     Child Loop BB18_4 Depth 2
+	mov	r9, qword ptr [rdi]
+	test	r9, r9
+	je	.LBB18_7
+# BB#3:                                 #   in Loop: Header=BB18_2 Depth=1
+	mov	rax, r9
+	.p2align	4, 0x90
+.LBB18_4:                               #   Parent Loop BB18_2 Depth=1
+                                        # =>  This Inner Loop Header: Depth=2
+	mov	rcx, rdx
+	shr	rcx, 6
+	mov	rcx, qword ptr [rsi + 8*rcx]
+	bt	rcx, rdx
+	jb	.LBB18_6
+# BB#5:                                 #   in Loop: Header=BB18_4 Depth=2
+	mov	rcx, rax
+	neg	rcx
+	and	rcx, rax
+	not	rcx
+	and	r9, rcx
+	mov	qword ptr [rdi], r9
+.LBB18_6:                               #   in Loop: Header=BB18_4 Depth=2
+	lea	rcx, [rax - 1]
+	inc	rdx
+	and	rax, rcx
+	jne	.LBB18_4
+.LBB18_7:                               #   in Loop: Header=BB18_2 Depth=1
+	add	rdi, 8
+	cmp	rdi, r8
+	jb	.LBB18_2
+.LBB18_8:
+	mov	rsp, rbp
+	pop	rbp
+	ret
+.Lfunc_end18:
+	.size	asm_bitmap_bit_one_mask_avx, .Lfunc_end18-asm_bitmap_bit_one_mask_avx
+
 
 	.ident	"Apple LLVM version 8.1.0 (clang-802.0.42)"
 	.section	".note.GNU-stack","",@progbits

@@ -37,6 +37,7 @@ var (
 	AsmBkdrHash func(string, uint64) uint64
 	AsmHashStringAndSum func([]uint8, []uint64, uint64) uint64
 	AsmBitmapGetBitList func([]uint64, []uint64) uint64
+	AsmBitmapBitOneMask func([]uint64, []uint64)
 
 	bkdrHashIndex []uint64
 )
@@ -89,6 +90,7 @@ func init() {
 		AsmBitmapGetBitList = asm_bitmap_get_bit_list_avx2
 		AsmBkdrHash = asm_bkdr_hash_avx2
 		AsmHashStringAndSum = asm_multi_and_sum_avx2
+		AsmBitmapBitOneMask = asm_bitmap_bit_one_mask_avx2
 	case cpuid.EnabledAVX && cpuid.HasFeature(cpuid.AVX):
 		fmt.Println("using avx")
 		AsmVectorSum = asm_sum_avx
@@ -109,6 +111,7 @@ func init() {
 		AsmBitmapGetBitList = asm_bitmap_get_bit_list_avx
 		AsmBkdrHash = asm_bkdr_hash_avx
 		AsmHashStringAndSum = asm_multi_and_sum_avx
+		AsmBitmapBitOneMask = asm_bitmap_bit_one_mask_avx
 
 	case cpuid.HasFeature(cpuid.SSE4_2):
 		fmt.Println("using sse2")
@@ -130,6 +133,7 @@ func init() {
 		AsmBitmapGetBitList = asm_bitmap_get_bit_list_sse4_2
 		AsmBkdrHash = asm_bkdr_hash_sse4_2
 		AsmHashStringAndSum = asm_multi_and_sum_sse4_2
+		AsmBitmapBitOneMask = asm_bitmap_bit_one_mask_sse4_2
 	default:
 		fmt.Println("using default")
 		AsmVectorSum = vectorSum
@@ -150,6 +154,7 @@ func init() {
 		AsmBitmapGetBitList = bitmapGetBitList
 		AsmBkdrHash = bkdrHash
 		AsmHashStringAndSum = hashStringAdSum
+		AsmBitmapBitOneMask = bitmapBitOneMask
 	}
 }
 
@@ -318,4 +323,18 @@ func hashStringAdSum(a []uint8, b []uint64, seed uint64) uint64 {
 	}
 	ret += seed * b[i]
 	return ret;
+}
+
+
+func bitmapBitOneMask(a []uint64, mask []uint64) {
+	maskPos := uint64(0)
+	for j, num := range a {
+		for num > 0 {
+			if (((mask[maskPos>>6] >> (maskPos&0x3f)) & 1) == 0) {
+				a[j] &= ^(num & -num)
+			}
+			num = num & (num - 1)
+			maskPos++
+		}
+	}
 }

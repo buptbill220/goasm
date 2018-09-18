@@ -1950,3 +1950,47 @@ LBB17_6:
 	LONG $0x03f8c148         // sar    rax, 3
 	MOVQ AX, ret+32(FP)
 	RET
+
+TEXT ·_asm_bitmap_bit_one_mask_avx(SB), $0-24
+
+	MOVQ addr+0(FP), DI
+	MOVQ addr1+8(FP), SI
+	MOVQ len+16(FP), DX
+
+	WORD $0x8548; BYTE $0xd2 // test    rdx, rdx
+	JLE  LBB18_8
+	LONG $0xd7048d4c         // lea    r8, [rdi + 8*rdx]
+	WORD $0xd231             // xor    edx, edx
+
+LBB18_2:
+	WORD $0x8b4c; BYTE $0x0f // mov    r9, qword [rdi]
+	WORD $0x854d; BYTE $0xc9 // test    r9, r9
+	JE   LBB18_7
+	WORD $0x894c; BYTE $0xc8 // mov    rax, r9
+
+LBB18_4:
+	WORD $0x8948; BYTE $0xd1 // mov    rcx, rdx
+	LONG $0x06e9c148         // shr    rcx, 6
+	LONG $0xce0c8b48         // mov    rcx, qword [rsi + 8*rcx]
+	LONG $0xd1a30f48         // bt    rcx, rdx
+	JB   LBB18_6
+	WORD $0x8948; BYTE $0xc1 // mov    rcx, rax
+	WORD $0xf748; BYTE $0xd9 // neg    rcx
+	WORD $0x2148; BYTE $0xc1 // and    rcx, rax
+	WORD $0xf748; BYTE $0xd1 // not    rcx
+	WORD $0x2149; BYTE $0xc9 // and    r9, rcx
+	WORD $0x894c; BYTE $0x0f // mov    qword [rdi], r9
+
+LBB18_6:
+	LONG $0xff488d48         // lea    rcx, [rax - 1]
+	WORD $0xff48; BYTE $0xc2 // inc    rdx
+	WORD $0x2148; BYTE $0xc8 // and    rax, rcx
+	JNE  LBB18_4
+
+LBB18_7:
+	LONG $0x08c78348         // add    rdi, 8
+	WORD $0x394c; BYTE $0xc7 // cmp    rdi, r8
+	JB   LBB18_2
+
+LBB18_8:
+	RET
