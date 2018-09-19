@@ -338,3 +338,13 @@ func bitmapBitOneMask(a []uint64, mask []uint64) {
 		}
 	}
 }
+
+func MemsetUint64(a []uint64, v uint8) {
+	var b []uint8
+	aHeader := (*reflect.SliceHeader)(unsafe.Pointer(&a))
+	bHeader := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	bHeader.Data = aHeader.Data
+	bHeader.Len = aHeader.Len << 3
+	bHeader.Cap = bHeader.Len
+	AsmMemset(b, 0xff)
+}
